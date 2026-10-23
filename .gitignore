@@ -1,0 +1,8 @@
+target/
+instance/*.db
+instance/tmp/
+.env
+*.log
+.vscode/
+.idea/
+*.iml

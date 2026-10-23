@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en" data-bs-theme="dark">
+<head th:replace="~{fragments :: head('Dashboard')}"></head>
+<body class="page-transition-wrapper">
+<nav th:replace="~{fragments :: nav}"></nav>
+
+<main id="main" class="container">
+  <div class="qs-page-header">
+    <h1>📊 Dashboard</h1>
+    <p>Statistics and trends from your scan history.</p>
+  </div>
+
+  <!-- Empty state -->
+  <div th:if="${stats.total() == 0}" class="qs-card p-5 text-center">
+    <div style="font-size:3rem;margin-bottom:1rem">📭</div>
+    <p class="text-muted mb-3">No scans recorded yet — nothing to chart.</p>
+    <a class="btn btn-accent mx-auto" th:href="@{/scan}" id="dash-analyze-btn">🔍 Analyze a URL</a>
+  </div>
+
+  <div th:if="${stats.total() > 0}">
+    <!-- ── STAT TILES ──────────────────────────────────── -->
+    <div class="row g-3 mb-4 stagger-children">
+      <div class="col-6 col-lg-3">
+        <div class="qs-stat-card text-center">
+          <div class="qs-stat-label">Total Scans</div>
+          <div class="qs-stat-value" id="stat-total" th:text="${stats.total()}">0</div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="qs-stat-card text-center" style="border-color:rgba(74,222,128,.25)">
+          <div class="qs-stat-label" style="color:var(--low)">● Low Risk</div>
+          <div class="qs-stat-value" id="stat-low" style="color:var(--low)"
+               th:text="${stats.byLevel()['Low Risk']}">0</div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="qs-stat-card text-center" style="border-color:rgba(251,191,36,.25)">
+          <div class="qs-stat-label" style="color:var(--medium)">▲ Medium Risk</div>
+          <div class="qs-stat-value" id="stat-medium" style="color:var(--medium)"
+               th:text="${stats.byLevel()['Medium Risk']}">0</div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="qs-stat-card text-center" style="border-color:rgba(248,113,113,.25)">
+          <div class="qs-stat-label" style="color:var(--high)">■ High Risk</div>
+          <div class="qs-stat-value" id="stat-high" style="color:var(--high)"
+               th:text="${stats.byLevel()['High Risk']}">0</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CHARTS ─────────────────────────────────────── -->
+    <div class="row g-3 mb-4">
+      <div class="col-lg-5">
+        <div class="qs-card p-3 h-100">
+          <h2 class="h6 text-muted mb-3">Risk Distribution</h2>
+          <div class="qs-chart"><canvas id="levelChart" role="img" aria-label="Doughnut chart of scans by risk level"></canvas></div>
+        </div>
+      </div>
+      <div class="col-lg-7">
+        <div class="qs-card p-3 h-100">
+          <h2 class="h6 text-muted mb-3">Scans per Day (last 14 days)</h2>
+          <div class="qs-chart"><canvas id="trendChart" role="img" aria-label="Line chart of scans per day"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── RECENT SCANS TABLE ────────────────────────── -->
+    <h2 class="h5 mb-3">Recent Scans</h2>
+    <div class="qs-card p-0 mb-5" style="overflow:hidden">
+      <div class="table-responsive">
+        <table class="table qs-table align-middle mb-0">
+          <thead>
+            <tr>
+              <th scope="col">When</th>
+              <th scope="col">URL (redacted)</th>
+              <th scope="col">Score</th>
+              <th scope="col">Level</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="s : ${stats.recent()}">
+              <td class="text-nowrap small text-muted"
+                  th:text="${#strings.replace(#strings.replace(s.createdAt(), 'T', ' '), 'Z', ' UTC')}">when</td>
+              <td class="text-break" style="max-width:300px">
+                <a th:href="@{/result/{id}(id=${s.id()})}"
+                   th:text="${s.displayUrl()}"
+                   class="font-monospace small">url</a>
+              </td>
+              <td th:text="${s.riskScore()}" class="fw-600">0</td>
+              <td><span th:replace="~{fragments :: badge(${s.riskLevel()})}"></span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="chart-data" hidden th:data-levels="${levelsJson}" th:data-trend="${trendJson}"></div>
+  </div>
+</main>
+
+<footer th:replace="~{fragments :: footer}"></footer>
+<script th:src="@{/vendor/chart.umd.js}"></script>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

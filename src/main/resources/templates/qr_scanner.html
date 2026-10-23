@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en" data-bs-theme="dark">
+<head th:replace="~{fragments :: head('Scan QR Code')}"></head>
+<body class="page-transition-wrapper">
+<nav th:replace="~{fragments :: nav}"></nav>
+
+<main id="main" class="container">
+  <div class="qs-page-header">
+    <h1>📷 Scan a QR Code</h1>
+    <p>Upload a picture of a QR code. Decoded text is shown as plain text and is never opened. The image is deleted right after processing.</p>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <!-- Error / Warning -->
+      <div class="alert alert-danger mb-3" role="alert" th:if="${error}" th:text="${error}">Error</div>
+      <div class="alert alert-warning mb-3" role="alert" th:if="${warning}" th:text="${warning}">Warning</div>
+
+      <!-- CSRF token in the URL because a multipart body is parsed after the security filter -->
+      <form method="post"
+            th:action="@{/qr-scanner(${_csrf.parameterName}=${_csrf.token})}"
+            enctype="multipart/form-data"
+            class="qs-card p-4 js-busy-form"
+            id="qr-upload-form">
+
+        <div class="mb-4">
+          <label for="qr_image" class="form-label">QR Image (PNG, JPEG, GIF, BMP — max 2 MB)</label>
+          <input id="qr_image" name="qr_image" type="file" class="form-control"
+                 accept="image/png,image/jpeg,image/gif,image/bmp" required>
+        </div>
+
+        <div class="form-check mb-4">
+          <input class="form-check-input" type="checkbox" id="save" name="save_history" checked>
+          <label class="form-check-label" for="save">Save redacted records to scan history</label>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button class="btn btn-accent px-4" type="submit" id="qr-submit-btn">
+            <span class="spinner-border spinner-border-sm d-none me-1" aria-hidden="true"></span>
+            <span class="btn-label">Decode &amp; Analyze →</span>
+          </button>
+          <a class="btn btn-outline-accent" th:href="@{/}" id="qr-home-btn">← Back</a>
+        </div>
+      </form>
+
+      <!-- Results -->
+      <div th:if="${entries != null and !entries.isEmpty()}" class="mt-4">
+        <h2 class="h5 mb-3"
+            th:text="'Decoded ' + ${entries.size()} + (${entries.size()} == 1 ? ' code' : ' codes')">Decoded</h2>
+
+        <div th:each="e, st : ${entries}" class="qs-card mb-3 p-4">
+          <p class="qs-indicator-meta mb-2"
+             th:text="'Code ' + ${st.count} + ' · '
+                    + (${e.kind()} == 'url' ? '🌐 Web URL'
+                    : (${e.kind()} == 'unsupported_scheme' ? '⚠️ Unsupported scheme' : '📝 Plain text'))">
+            Code</p>
+          <p class="font-monospace text-break small mb-3"
+             style="color:var(--purple-3)"
+             th:text="${#strings.abbreviate(e.text(), 300)}">text</p>
+
+          <!-- URL scan result summary -->
+          <div th:if="${e.kind() == 'url' and e.scan() != null}">
+            <div class="d-flex align-items-center gap-3 mb-2">
+              <span th:replace="~{fragments :: badge(${e.scan().riskLevel()})}"></span>
+              <strong th:text="${e.scan().riskScore()} + '/100'">0/100</strong>
+              <span class="small text-muted" th:text="${e.scan().indicators().size()} + ' indicator(s)'">0</span>
+            </div>
+            <p class="small text-muted mb-2" th:text="${e.scan().summary()}">summary</p>
+            <a class="btn btn-sm btn-outline-accent"
+               th:if="${e.scanId() != null}"
+               th:href="@{/result/{id}(id=${e.scanId()})}"
+               id="qr-view-details-btn">View Full Details →</a>
+            <span class="small text-muted" th:if="${e.scanId() == null}">Not saved – no detail page.</span>
+          </div>
+
+          <div class="alert alert-danger mb-0 small"
+               th:if="${e.kind() == 'url' and e.scan() == null}"
+               th:text="'Not analyzed: ' + ${e.error()}">err</div>
+
+          <div class="alert alert-warning mb-0 small" th:if="${e.kind() == 'unsupported_scheme'}">
+            This QR code uses a non-http/https scheme. Do not act on it unless you trust its source.
+          </div>
+
+          <div class="alert alert-secondary mb-0 small" th:if="${e.kind() == 'text'}">
+            This QR code contains plain text, not a web URL.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<footer th:replace="~{fragments :: footer}"></footer>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

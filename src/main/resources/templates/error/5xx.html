@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en" data-bs-theme="dark">
+<head th:replace="~{fragments :: head('Error')}"></head>
+<body>
+<nav th:replace="~{fragments :: nav}"></nav>
+<main id="main" class="container">
+  <div class="text-center py-5">
+    <div style="font-size:5rem;margin-bottom:1rem;filter:drop-shadow(0 0 24px rgba(248,113,113,.5))"
+         th:text="${status}">5xx</div>
+    <h1 class="h3 mb-2">Something went wrong</h1>
+    <p class="text-muted mx-auto" style="max-width:450px">
+      An unexpected server error occurred. Nothing sensitive was exposed.
+    </p>
+    <a class="btn btn-accent mt-3" th:href="@{/}" id="err5xx-home-btn">← Back to Home</a>
+  </div>
+</main>
+<footer th:replace="~{fragments :: footer}"></footer>
+</body>
+</html>

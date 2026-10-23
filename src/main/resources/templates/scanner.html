@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en" data-bs-theme="dark">
+<head th:replace="~{fragments :: head('Analyze URL')}"></head>
+<body class="page-transition-wrapper">
+<nav th:replace="~{fragments :: nav}"></nav>
+
+<main id="main" class="container">
+  <div class="qs-page-header">
+    <h1>🔍 Analyze a URL</h1>
+    <p>Paste a link you received. It is analyzed as text only and is never opened.</p>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <!-- Error banner -->
+      <div class="alert alert-danger mb-3" role="alert"
+           th:if="${error}" th:text="${error}">Error</div>
+
+      <form method="post" th:action="@{/scan}" class="qs-card p-4 js-busy-form" id="url-scan-form">
+        <div class="mb-4">
+          <label for="url" class="form-label">URL (http:// or https://)</label>
+          <input id="url" name="url" type="text" class="form-control form-control-lg"
+                 th:value="${url}" maxlength="2100" required autocomplete="off"
+                 placeholder="https://example.com/path"/>
+        </div>
+
+        <div class="form-check mb-4">
+          <input class="form-check-input" type="checkbox" id="save" name="save_history" checked>
+          <label class="form-check-label" for="save">
+            Save a redacted record to scan history
+          </label>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button class="btn btn-accent px-4" type="submit" id="url-submit-btn">
+            <span class="spinner-border spinner-border-sm d-none me-1" aria-hidden="true"></span>
+            <span class="btn-label">Analyze URL →</span>
+          </button>
+          <a class="btn btn-outline-accent" th:href="@{/}" id="url-home-btn">← Back</a>
+        </div>
+      </form>
+
+      <!-- Help block -->
+      <div class="qs-card p-3 mt-3" style="border-color:rgba(159,93,255,0.12)">
+        <p class="small text-muted mb-0">
+          💡 <strong>Tip:</strong> QRShield checks 14 structural rules: scheme, IP hosts,
+          punycode, brand misuse, suspicious keywords, shorteners, risky extensions, and more.
+          No link is ever opened or fetched.
+        </p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer th:replace="~{fragments :: footer}"></footer>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

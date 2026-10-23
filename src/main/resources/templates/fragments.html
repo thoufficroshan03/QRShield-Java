@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:fragment="head(title)">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="QRShield – Inspect URLs and QR codes before you open them. Free, private, explainable risk analysis.">
+  <title th:text="${title} + ' · QRShield'">QRShield</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/vendor/bootstrap.min.css}">
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<!-- ═══════════════════ NAV ═══════════════════ -->
+<nav th:fragment="nav" class="navbar navbar-expand-lg qs-nav">
+  <div class="container">
+    <a class="visually-hidden-focusable" href="#main">Skip to content</a>
+    <a class="navbar-brand" th:href="@{/}">
+      <span class="qs-logo" aria-hidden="true">◈</span>
+      QRShield
+    </a>
+    <button class="navbar-toggler" type="button"
+            data-bs-toggle="collapse" data-bs-target="#nav"
+            aria-controls="nav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="nav">
+      <ul class="navbar-nav ms-auto gap-1">
+        <li class="nav-item"><a class="nav-link" th:href="@{/scan}">🔍 Analyze URL</a></li>
+        <li class="nav-item"><a class="nav-link" th:href="@{/qr-scanner}">📷 Scan QR Code</a></li>
+        <li class="nav-item"><a class="nav-link" th:href="@{/history}">🕓 History</a></li>
+        <li class="nav-item"><a class="nav-link" th:href="@{/dashboard}">📊 Dashboard</a></li>
+        <li class="nav-item"><a class="nav-link" th:href="@{/about}">ℹ️ About</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════════════ FOOTER ════════════════ -->
+<footer th:fragment="footer" class="qs-footer">
+  <div class="container d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <span>
+      <strong style="color: var(--purple-3)">◈ QRShield</strong>
+      &nbsp;—&nbsp; Cybersecurity college project. Heuristic analysis only. Never visits submitted links.
+    </span>
+    <span style="color: var(--text-dim)">Local single-user version</span>
+  </div>
+  <script th:src="@{/vendor/bootstrap.bundle.min.js}"></script>
+</footer>
+
+<!-- ═══════════════════ RISK BADGE ════════════ -->
+<span th:fragment="badge(level)" class="risk-badge"
+      th:classappend="${level == 'Low Risk'} ? 'risk-low' : (${level == 'Medium Risk'} ? 'risk-medium' : 'risk-high')"
+      th:text="(${level == 'Low Risk'} ? '● ' : (${level == 'Medium Risk'} ? '▲ ' : '■ ')) + ${level}">Level</span>
+
+<!-- ═══════════════════ SPLASH SCREEN ════════════ -->
+<div th:fragment="splash" id="qs-splash" role="status" aria-live="polite" aria-label="Loading QRShield">
+
+  <!-- Animated background blobs -->
+  <div class="splash-blob splash-blob-1" aria-hidden="true"></div>
+  <div class="splash-blob splash-blob-2" aria-hidden="true"></div>
+
+  <!-- Main content -->
+  <div class="splash-body">
+
+    <!-- Shield icon -->
+    <div class="splash-icon-ring" aria-hidden="true">
+      <div class="splash-icon-inner">◈</div>
+      <svg class="splash-ring-svg" viewBox="0 0 120 120" aria-hidden="true">
+        <circle class="splash-ring-track" cx="60" cy="60" r="54"/>
+        <circle class="splash-ring-fill"  cx="60" cy="60" r="54"/>
+      </svg>
+    </div>
+
+    <!-- Brand name (letters revealed one by one via CSS) -->
+    <div class="splash-name" aria-hidden="true">
+      <span class="sl">Q</span><span class="sl">R</span><span class="sl">S</span><span class="sl">h</span><span class="sl">i</span><span class="sl">e</span><span class="sl">l</span><span class="sl">d</span>
+    </div>
+
+    <!-- Tagline -->
+    <p class="splash-caption">Inspect links &amp; QR codes <strong>before</strong> you click</p>
+
+    <!-- Animated dots -->
+    <div class="splash-dots" aria-hidden="true">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

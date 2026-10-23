@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en" data-bs-theme="dark">
+<head th:replace="~{fragments :: head('Scan Result')}"></head>
+<body class="page-transition-wrapper">
+<nav th:replace="~{fragments :: nav}"></nav>
+
+<main id="main" class="container">
+  <div class="qs-page-header">
+    <h1>Scan Result</h1>
+  </div>
+
+  <!-- Notice banner -->
+  <div class="alert alert-info mb-3" role="status" th:if="${warning}" th:text="${warning}">Notice</div>
+
+  <!-- ── SCORE CARD ─────────────────────────────────────── -->
+  <div class="qs-card p-4 mb-3 stagger-children">
+    <p class="small text-muted mb-2"
+       th:text="(${scan.inputType() == 'qr'} ? '📷 Extracted from QR code' : '🔗 Submitted URL') + ' · Sensitive parts redacted'">
+      Submitted URL
+    </p>
+    <p class="font-monospace text-break mb-3"
+       style="font-size:.88rem;color:var(--purple-3);"
+       th:text="${scan.displayUrl()}">url</p>
+
+    <div class="row align-items-center g-4">
+      <div class="col-auto">
+        <div class="qs-score-ring"
+             th:classappend="${scan.riskLevel() == 'Low Risk'} ? 'risk-low' : (${scan.riskLevel() == 'Medium Risk'} ? 'risk-medium' : 'risk-high')">
+          <span style="font-size:1.8rem;font-weight:800" th:text="${scan.riskScore()}">0</span>
+          <span style="font-size:.7rem;opacity:.7">/100</span>
+        </div>
+      </div>
+      <div class="col">
+        <div class="mb-2"><span th:replace="~{fragments :: badge(${scan.riskLevel()})}"></span></div>
+        <progress class="qs-meter mb-2"
+                  th:classappend="${scan.riskLevel() == 'Low Risk'} ? 'risk-low' : (${scan.riskLevel() == 'Medium Risk'} ? 'risk-medium' : 'risk-high')"
+                  th:value="${scan.riskScore()}" max="100"
+                  th:aria-label="'Risk score ' + ${scan.riskScore()} + ' out of 100'"></progress>
+        <p class="mb-1" th:text="${scan.summary()}">summary</p>
+        <p class="small text-muted mb-0">A low score only means the implemented checks found few indicators. It never guarantees a link is safe.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── INDICATORS ─────────────────────────────────────── -->
+  <h2 class="h5 mb-3">
+    Triggered Indicators
+    <span class="small text-muted fw-normal">(<span th:text="${scan.indicators().size()}">0</span>)</span>
+  </h2>
+
+  <div th:each="i : ${scan.indicators()}"
+       class="qs-indicator"
+       th:classappend="${i.severity() == 'High'} ? 'sev-high' : (${i.severity() == 'Medium'} ? 'sev-medium' : 'sev-low')">
+    <div class="d-flex justify-content-between flex-wrap gap-2 mb-1">
+      <span class="qs-indicator-name" th:text="${i.name()}">name</span>
+      <span class="qs-indicator-meta"
+            th:text="'Severity: ' + ${i.severity()}
+                   + (${i.contribution()} > 0 ? ' · +' + ${i.contribution()} + ' pts' : '')
+                   + ' · ' + (${i.source()} == 'threat_intelligence' ? '🔴 Verified' : 'Heuristic')">
+        sev</span>
+    </div>
+    <p th:text="${i.explanation()}">why</p>
+    <p><strong>Evidence:</strong> <span class="font-monospace text-break" th:text="${i.evidence()}">ev</span></p>
+    <p style="margin:0"><strong>Recommended:</strong> <span th:text="${i.recommendation()}">rec</span></p>
+  </div>
+
+  <p class="text-muted fst-italic" th:if="${scan.indicators().isEmpty()}">
+    No indicators were triggered by the implemented checks.
+  </p>
+
+  <!-- ── RECOMMENDATIONS ────────────────────────────────── -->
+  <h2 class="h5 mt-4 mb-2">Recommended Actions</h2>
+  <div class="qs-card p-3 mb-3">
+    <ul class="mb-0 ps-3">
+      <li th:each="r : ${scan.recommendations()}" th:text="${r}" class="mb-1 small text-muted">action</li>
+    </ul>
+  </div>
+
+  <!-- ── THREAT INTEL ───────────────────────────────────── -->
+  <h2 class="h5 mt-4 mb-2">Threat Intelligence</h2>
+  <div class="qs-card p-3 mb-4">
+    <p class="mb-1 fw-500" th:switch="${scan.tiStatus()}">
+      <span th:case="'confirmed_match'" style="color:var(--high)">🔴 Confirmed provider match</span>
+      <span th:case="'no_match'" style="color:var(--low)">🟢 No match reported (not proof of safety)</span>
+      <span th:case="'unavailable'" style="color:var(--medium)">🟡 Provider unavailable</span>
+      <span th:case="*" class="text-muted">⚪ Not configured – heuristic analysis only</span>
+    </p>
+    <p class="small text-muted mb-1"
+       th:if="${scan.tiDetail() != null and !scan.tiDetail().isEmpty()}"
+       th:text="${scan.tiDetail()}">detail</p>
+    <p class="small text-muted mb-0"
+       th:text="'Scanned: ' + ${#strings.replace(#strings.replace(scan.createdAt(), 'T', ' '), 'Z', ' UTC')}">
+      time</p>
+  </div>
+
+  <!-- ── ACTIONS ────────────────────────────────────────── -->
+  <div class="d-flex flex-wrap gap-2 mb-5">
+    <a class="btn btn-accent" th:href="@{/scan}" id="result-scan-again-btn">🔍 Scan Another URL</a>
+    <a class="btn btn-outline-accent" th:href="@{/qr-scanner}" id="result-qr-btn">📷 Scan QR Code</a>
+    <a class="btn btn-outline-accent" th:href="@{/}" id="result-home-btn">🏠 Home</a>
+    <a class="btn btn-outline-accent"
+       th:if="${scan.id() != null}"
+       th:href="@{/history}"
+       th:text="'🕓 History (record #' + ${scan.id()} + ')'"
+       id="result-history-btn">History</a>
+  </div>
+</main>
+
+<footer th:replace="~{fragments :: footer}"></footer>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en" data-bs-theme="dark">
+<head th:replace="~{fragments :: head('Scan History')}"></head>
+<body class="page-transition-wrapper">
+<nav th:replace="~{fragments :: nav}"></nav>
+
+<main id="main" class="container">
+  <div class="qs-page-header">
+    <h1>🕓 Scan History</h1>
+    <p>All stored scans are redacted – credentials and token-like values are hidden.</p>
+  </div>
+
+  <!-- Flash message -->
+  <div th:if="${flash}" class="alert mb-3"
+       th:classappend="'alert-' + ${flashType}"
+       role="status" th:text="${flash}">Message</div>
+
+  <!-- ── FILTER FORM ─────────────────────────────────── -->
+  <form method="get" th:action="@{/history}" class="qs-card p-3 mb-4" id="history-filter-form">
+    <div class="row g-2 align-items-end">
+      <div class="col-sm-4 col-md-3">
+        <label for="level" class="form-label">Risk Level</label>
+        <select id="level" name="level" class="form-select qs-level-select"
+              th:attr="data-selected=${level}">
+          <option value="">All levels</option>
+          <option value="Low Risk"    th:selected="${'Low Risk'    == level}" class="opt-low"    style="color:#4ade80">● Low Risk</option>
+          <option value="Medium Risk" th:selected="${'Medium Risk' == level}" class="opt-medium" style="color:#fcd34d">▲ Medium Risk</option>
+          <option value="High Risk"   th:selected="${'High Risk'   == level}" class="opt-high"   style="color:#fb7185">■ High Risk</option>
+        </select>
+      </div>
+      <div class="col-sm-4 col-md-3">
+        <label for="from" class="form-label">From Date</label>
+        <input id="from" name="from" type="date" class="form-control" th:value="${from}">
+      </div>
+      <div class="col-sm-4 col-md-3">
+        <label for="to" class="form-label">To Date</label>
+        <input id="to" name="to" type="date" class="form-control" th:value="${to}">
+      </div>
+      <div class="col-md-3 d-flex gap-2">
+        <button class="btn btn-accent flex-fill" type="submit" id="history-filter-btn">Filter</button>
+        <a class="btn btn-outline-secondary" th:href="@{/history}" id="history-reset-btn">Reset</a>
+      </div>
+    </div>
+  </form>
+
+  <!-- ── TABLE ──────────────────────────────────────── -->
+  <div th:if="${!scans.isEmpty()}">
+    <div class="qs-card p-0 mb-3" style="overflow:hidden">
+      <div class="table-responsive">
+        <table class="table align-middle qs-table mb-0">
+          <caption class="visually-hidden">Previous scans</caption>
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">When</th>
+              <th scope="col">Type</th>
+              <th scope="col">URL (redacted)</th>
+              <th scope="col">Score</th>
+              <th scope="col">Level</th>
+              <th scope="col"><span class="visually-hidden">Details</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="s : ${scans}">
+              <td class="text-muted small" th:text="${s.id()}">1</td>
+              <td class="text-nowrap small text-muted"
+                  th:text="${#strings.replace(#strings.replace(s.createdAt(), 'T', ' '), 'Z', ' UTC')}">when</td>
+              <td>
+                <span class="risk-badge"
+                      style="color:var(--purple-3);border-color:rgba(159,93,255,0.35);background:rgba(124,58,237,0.1)"
+                      th:text="${#strings.toUpperCase(s.inputType())}">URL</span>
+              </td>
+              <td class="text-break font-monospace small" style="max-width:280px" th:text="${s.displayUrl()}">url</td>
+              <td class="fw-600" th:text="${s.riskScore()}">0</td>
+              <td><span th:replace="~{fragments :: badge(${s.riskLevel()})}"></span></td>
+              <td>
+                <a class="btn btn-sm btn-outline-accent"
+                   th:href="@{/result/{id}(id=${s.id()})}">Details →</a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <nav aria-label="History pages" class="d-flex justify-content-between align-items-center mb-4">
+      <span class="small text-muted"
+            th:text="${total} + ' record(s) · page ' + ${page} + ' of ' + ${pages}">n</span>
+      <div class="btn-group">
+        <a class="btn btn-outline-accent btn-sm"
+           th:if="${page > 1}"
+           th:href="@{/history(page=${page - 1},level=${level},from=${from},to=${to})}"
+           id="history-prev-btn">← Previous</a>
+        <a class="btn btn-outline-accent btn-sm"
+           th:if="${page < pages}"
+           th:href="@{/history(page=${page + 1},level=${level},from=${from},to=${to})}"
+           id="history-next-btn">Next →</a>
+      </div>
+    </nav>
+  </div>
+
+  <!-- Empty state -->
+  <div th:if="${scans.isEmpty()}" class="qs-card p-5 text-center mb-4">
+    <div style="font-size:3rem;margin-bottom:1rem">🔎</div>
+    <p class="text-muted mb-3">No scans match your filters.</p>
+    <a class="btn btn-accent mx-auto" th:href="@{/scan}" id="history-empty-scan-btn">🔍 Analyze your first URL</a>
+  </div>
+
+  <hr class="my-4">
+
+  <!-- ── CLEAR HISTORY ──────────────────────────────── -->
+  <div class="qs-card p-3 mb-5" style="border-color:rgba(248,113,113,0.2)">
+    <p class="small text-muted mb-2">⚠️ Permanently delete all scan records from the database.</p>
+    <form method="post" th:action="@{/history/clear}" class="js-confirm-form"
+          data-confirm="Permanently delete ALL scan history?"
+          id="history-clear-form">
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="checkbox" id="confirm" name="confirm" value="yes">
+        <label class="form-check-label small" for="confirm">I understand this deletes every stored scan</label>
+      </div>
+      <button class="btn btn-outline-danger btn-sm" type="submit" id="history-clear-btn">🗑 Clear History</button>
+    </form>
+  </div>
+</main>
+
+<footer th:replace="~{fragments :: footer}"></footer>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

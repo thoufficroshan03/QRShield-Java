@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en" data-bs-theme="dark">
+<head th:replace="~{fragments :: head('Inspect links before you click')}">
+  <!-- critical splash CSS injected below so it loads before body renders -->
+</head>
+
+<!-- ═══ CRITICAL: Splash screen CSS must be inline to avoid FOUC ══════ -->
+<style>
+  #qs-splash{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#07020f;overflow:hidden;transition:opacity .65s cubic-bezier(.16,1,.3,1),transform .75s cubic-bezier(.16,1,.3,1)}
+  #qs-splash.sp-exit{opacity:0;transform:translateY(-100%);pointer-events:none}
+  #qs-splash.sp-gone{display:none}
+  .sp-blob{position:absolute;border-radius:50%;pointer-events:none;filter:blur(55px)}
+  .sp-b1{width:600px;height:600px;top:-180px;left:-180px;background:radial-gradient(ellipse,rgba(124,58,237,.38) 0%,transparent 70%);animation:blobFloat1 14s ease-in-out infinite}
+  .sp-b2{width:500px;height:500px;bottom:-120px;right:-120px;background:radial-gradient(ellipse,rgba(168,85,247,.25) 0%,transparent 70%);animation:blobFloat2 18s ease-in-out infinite}
+  .sp-body{display:flex;flex-direction:column;align-items:center;gap:1.4rem;text-align:center;position:relative;z-index:1}
+  .sp-ring{position:relative;width:120px;height:120px;display:flex;align-items:center;justify-content:center;animation:scaleIn .6s cubic-bezier(.34,1.4,.64,1) .1s both}
+  .sp-ring svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+  .sp-track{fill:none;stroke:rgba(168,85,247,.18);stroke-width:4}
+  .sp-fill{fill:none;stroke:url(#sg);stroke-width:4;stroke-linecap:round;stroke-dasharray:339.3;stroke-dashoffset:339.3;animation:ringFill 1.9s cubic-bezier(.4,0,.2,1) .35s forwards}
+  @keyframes ringFill{to{stroke-dashoffset:0}}
+  .sp-icon{font-size:2.9rem;background:linear-gradient(135deg,#7c3aed,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 18px rgba(168,85,247,.7));animation:glowPulse 2s ease-in-out infinite}
+  .sp-name{font-size:clamp(2.8rem,8vw,5rem);font-weight:800;letter-spacing:-.02em;background:linear-gradient(120deg,#f0e8ff 0%,#d4a0ff 50%,#a855f7 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1}
+  .sp-name .sl{display:inline-block;opacity:0;transform:translateY(18px);animation:letterIn .42s cubic-bezier(.34,1.4,.64,1) both}
+  .sp-name .sl:nth-child(1){animation-delay:.55s}
+  .sp-name .sl:nth-child(2){animation-delay:.65s}
+  .sp-name .sl:nth-child(3){animation-delay:.75s}
+  .sp-name .sl:nth-child(4){animation-delay:.84s}
+  .sp-name .sl:nth-child(5){animation-delay:.92s}
+  .sp-name .sl:nth-child(6){animation-delay:1.00s}
+  .sp-name .sl:nth-child(7){animation-delay:1.08s}
+  .sp-name .sl:nth-child(8){animation-delay:1.16s}
+  @keyframes letterIn{to{opacity:1;transform:translateY(0)}}
+  .sp-cap{font-size:clamp(.9rem,2.5vw,1.1rem);color:#c4aee8;margin:0;letter-spacing:.01em;opacity:0;animation:fadeUp .5s cubic-bezier(.16,1,.3,1) 1.6s both}
+  .sp-cap strong{color:#e9d5ff}
+  .sp-dots{display:flex;gap:.6rem;opacity:0;animation:fadeUp .4s ease 1.9s both}
+  .sp-dots span{width:7px;height:7px;border-radius:50%;background:rgba(168,85,247,.65);animation:dotBounce 1.1s ease-in-out infinite}
+  .sp-dots span:nth-child(2){animation-delay:.17s}
+  .sp-dots span:nth-child(3){animation-delay:.34s}
+  @keyframes dotBounce{0%,80%,100%{transform:scale(.7);opacity:.4}40%{transform:scale(1.25);opacity:1}}
+  @keyframes glowPulse{0%,100%{filter:drop-shadow(0 0 10px rgba(168,85,247,.5))}50%{filter:drop-shadow(0 0 26px rgba(168,85,247,.9))}}
+  @keyframes scaleIn{from{opacity:0;transform:scale(.5)}to{opacity:1;transform:scale(1)}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes blobFloat1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(40px,30px) scale(1.1)}}
+  @keyframes blobFloat2{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-30px,-40px) scale(1.08)}}
+</style>
+
+<body class="page-transition-wrapper">
+
+<!-- ═══ SPLASH SCREEN (self-contained, no external dependency) ══════════ -->
+<div id="qs-splash" aria-label="Loading QRShield" role="status">
+  <div class="sp-blob sp-b1" aria-hidden="true"></div>
+  <div class="sp-blob sp-b2" aria-hidden="true"></div>
+  <div class="sp-body">
+    <div class="sp-ring" aria-hidden="true">
+      <div class="sp-icon">◈</div>
+      <svg viewBox="0 0 120 120" aria-hidden="true">
+        <defs>
+          <linearGradient id="sg" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%"   stop-color="#7c3aed"/>
+            <stop offset="100%" stop-color="#c084fc"/>
+          </linearGradient>
+        </defs>
+        <circle class="sp-track" cx="60" cy="60" r="54"/>
+        <circle class="sp-fill"  cx="60" cy="60" r="54"/>
+      </svg>
+    </div>
+    <div class="sp-name" aria-label="QRShield">
+      <span class="sl">Q</span><span class="sl">R</span><span class="sl">S</span><span class="sl">h</span><span class="sl">i</span><span class="sl">e</span><span class="sl">l</span><span class="sl">d</span>
+    </div>
+    <p class="sp-cap">Inspect links &amp; QR codes <strong>before</strong> you click</p>
+    <div class="sp-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+  </div>
+</div>
+
+<nav th:replace="~{fragments :: nav}"></nav>
+
+<main id="main">
+
+  <!-- ═══════════════════ HERO ═══════════════════════════════ -->
+  <section class="qs-hero-v2">
+    <div class="qs-hero-glow" aria-hidden="true"></div>
+    <div class="container position-relative" style="z-index:1">
+
+      <div class="row align-items-center min-vh-hero g-5">
+
+        <!-- Left: copy + CTA -->
+        <div class="col-lg-6 stagger-children">
+          <span class="qs-eyebrow">🛡️ AI-Powered Link Intelligence</span>
+          <h1 class="qs-hero-title">
+            Know what's behind<br>
+            a link <span class="qs-gradient-text">before you click</span>
+          </h1>
+          <p class="qs-hero-sub">
+            QRShield inspects URLs and QR codes using 14 heuristic rules —
+            giving you a clear risk score with full explanations.
+            <strong>No link is ever opened.</strong>
+          </p>
+
+          <!-- URL quick-scan bar -->
+          <form class="qs-search-bar js-busy-form" method="post" th:action="@{/scan}" id="hero-scan-form">
+            <input type="hidden" name="save_history" value="on">
+            <div class="qs-search-inner">
+              <span class="qs-search-icon" aria-hidden="true">🔍</span>
+              <input id="hero-url" name="url" type="text" class="qs-search-input"
+                     placeholder="Paste a link here — e.g. https://example.com"
+                     maxlength="2100" required autocomplete="off">
+              <button class="qs-search-btn" type="submit" id="hero-analyze-btn">
+                <span class="spinner-border d-none me-1" style="width:.9rem;height:.9rem" aria-hidden="true"></span>
+                <span class="btn-label">Analyze</span>
+                <span aria-hidden="true">→</span>
+              </button>
+            </div>
+          </form>
+
+          <div class="qs-hero-actions stagger-children">
+            <a class="btn btn-outline-accent" th:href="@{/qr-scanner}" id="hero-qr-btn">
+              📷 Scan QR Code
+            </a>
+            <a class="btn btn-outline-accent" th:href="@{/dashboard}" id="hero-dash-btn">
+              📊 Dashboard
+            </a>
+            <a class="btn btn-outline-accent" th:href="@{/history}" id="hero-hist-btn">
+              🕓 History
+            </a>
+          </div>
+        </div>
+
+        <!-- Right: live score mockup card -->
+        <div class="col-lg-6 d-flex justify-content-center">
+          <div class="qs-demo-card" aria-hidden="true">
+            <div class="qs-demo-header">
+              <span class="qs-demo-dot" style="background:#fb7185"></span>
+              <span class="qs-demo-dot" style="background:#fcd34d"></span>
+              <span class="qs-demo-dot" style="background:#4ade80"></span>
+              <span class="qs-demo-label ms-2">Scan Result</span>
+            </div>
+            <div class="qs-demo-body">
+              <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="qs-demo-ring" style="--ring-color:#fb7185">
+                  <span style="font-size:1.4rem;font-weight:800;color:#fb7185">78</span>
+                  <span style="font-size:.65rem;color:rgba(255,255,255,.5)">/100</span>
+                </div>
+                <div>
+                  <span class="risk-badge risk-high mb-1 d-inline-flex">■ High Risk</span>
+                  <p class="small text-muted mb-0">Phishing indicators detected</p>
+                </div>
+              </div>
+              <div class="qs-demo-url mb-3">https://paypa<span class="qs-demo-red">l-secure</span>.xyz/login</div>
+              <div class="qs-demo-indicators">
+                <div class="qs-demo-ind sev-high">
+                  <span class="qs-demo-ind-dot"></span>
+                  <span>Brand impersonation (PayPal)</span>
+                </div>
+                <div class="qs-demo-ind sev-high">
+                  <span class="qs-demo-ind-dot"></span>
+                  <span>Suspicious keyword: <em>login</em></span>
+                </div>
+                <div class="qs-demo-ind sev-medium">
+                  <span class="qs-demo-ind-dot" style="background:var(--medium)"></span>
+                  <span>Non-standard TLD (.xyz)</span>
+                </div>
+              </div>
+              <progress class="qs-meter risk-high mt-3" value="78" max="100" aria-hidden="true"></progress>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <div class="container">
+
+    <!-- ═══════════════════ TRUST BADGES ══════════════════════ -->
+    <div class="qs-trust-strip stagger-children">
+      <div class="qs-trust-item">
+        <span class="qs-trust-icon">🚫</span>
+        <span>Never opens links</span>
+      </div>
+      <div class="qs-trust-sep" aria-hidden="true"></div>
+      <div class="qs-trust-item">
+        <span class="qs-trust-icon">🔒</span>
+        <span>Private &amp; local</span>
+      </div>
+      <div class="qs-trust-sep" aria-hidden="true"></div>
+      <div class="qs-trust-item">
+        <span class="qs-trust-icon">📷</span>
+        <span>QR code support</span>
+      </div>
+      <div class="qs-trust-sep" aria-hidden="true"></div>
+      <div class="qs-trust-item">
+        <span class="qs-trust-icon">📊</span>
+        <span>Explainable scoring</span>
+      </div>
+    </div>
+
+    <!-- ═══════════════════ FEATURES ══════════════════════════ -->
+    <section class="qs-section" aria-labelledby="feat-heading">
+      <p class="qs-section-title" id="feat-heading">What QRShield checks</p>
+      <h2 class="qs-section-h">14 heuristic rules, full transparency</h2>
+
+      <div class="row g-3 mt-1 stagger-children">
+        <div class="col-sm-6 col-lg-3">
+          <div class="qs-feature">
+            <div class="qs-feature-icon">🌐</div>
+            <h3>Domain Analysis</h3>
+            <p>IP-as-host, unusual TLDs, punycode homograph, excessive subdomains.</p>
+          </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <div class="qs-feature">
+            <div class="qs-feature-icon">🎭</div>
+            <h3>Brand Spoofing</h3>
+            <p>Detects 500+ brand names embedded in misleading domains.</p>
+          </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <div class="qs-feature">
+            <div class="qs-feature-icon">🔗</div>
+            <h3>URL Structure</h3>
+            <p>Long paths, high entropy, risky extensions, shortener services.</p>
+          </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <div class="qs-feature">
+            <div class="qs-feature-icon">⚠️</div>
+            <h3>Phishing Keywords</h3>
+            <p>Suspicious words like login, verify, secure, update, account.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════ HOW IT WORKS ══════════════════════ -->
+    <section class="qs-section" aria-labelledby="how-heading">
+      <p class="qs-section-title" id="how-heading">Process</p>
+      <h2 class="qs-section-h">How it works in 4 steps</h2>
+
+      <div class="row g-3 mt-1 stagger-children">
+        <div class="col-md-3">
+          <div class="qs-step-card">
+            <div class="qs-step-num">01</div>
+            <h3 class="qs-step-title">Submit</h3>
+            <p class="qs-step-body">Paste a URL or upload a QR code image. File is deleted immediately.</p>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="qs-step-card">
+            <div class="qs-step-num">02</div>
+            <h3 class="qs-step-title">Validate</h3>
+            <p class="qs-step-body">Only http/https links are accepted. Malformed or dangerous schemes are rejected.</p>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="qs-step-card">
+            <div class="qs-step-num">03</div>
+            <h3 class="qs-step-title">Analyze</h3>
+            <p class="qs-step-body">14 rules run against the URL structure. No network request is made.</p>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="qs-step-card">
+            <div class="qs-step-num">04</div>
+            <h3 class="qs-step-title">Explain</h3>
+            <p class="qs-step-body">You get a 0–100 score, risk badge, and evidence for every triggered indicator.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════ RISK LEGEND ═══════════════════════ -->
+    <section class="qs-section mb-5" aria-labelledby="risk-heading">
+      <p class="qs-section-title" id="risk-heading">Risk levels</p>
+      <h2 class="qs-section-h">Understanding your score</h2>
+
+      <div class="row g-3 mt-1 stagger-children">
+        <div class="col-md-4">
+          <div class="qs-risk-level-card" style="--lc:var(--low);--lc-bg:rgba(74,222,128,.08)">
+            <div class="qs-risk-level-header">
+              <span class="risk-badge risk-low">● Low Risk</span>
+              <span class="qs-risk-score">0 – 24</span>
+            </div>
+            <p class="qs-risk-desc">Few structural red flags were found. Proceed with normal awareness — low score does not guarantee safety.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="qs-risk-level-card" style="--lc:var(--medium);--lc-bg:rgba(252,211,77,.08)">
+            <div class="qs-risk-level-header">
+              <span class="risk-badge risk-medium">▲ Medium Risk</span>
+              <span class="qs-risk-score">25 – 59</span>
+            </div>
+            <p class="qs-risk-desc">Some indicators were triggered. Verify the source through a trusted channel before clicking.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="qs-risk-level-card" style="--lc:var(--high);--lc-bg:rgba(251,113,133,.08)">
+            <div class="qs-risk-level-header">
+              <span class="risk-badge risk-high">■ High Risk</span>
+              <span class="qs-risk-score">60 – 100</span>
+            </div>
+            <p class="qs-risk-desc">Multiple serious indicators detected. Do not open this link without thorough independent verification.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="alert alert-secondary mt-4" role="note">
+        <strong>Disclaimer:</strong> Results are heuristic indicators only, not proof of malicious or benign activity.
+        HTTPS alone does not prove a website is safe.
+      </div>
+    </section>
+
+  </div><!-- /container -->
+</main>
+
+<footer th:replace="~{fragments :: footer}"></footer>
+<script th:src="@{/js/main.js}"></script>
+
+<!-- Splash controller – inline so it runs the moment the DOM is ready -->
+<script>
+(function(){
+  var s=document.getElementById('qs-splash');
+  if(!s) return;
+  // Use key 'qs_sp2' – clears any stale key from older build
+  if(sessionStorage.getItem('qs_sp2')){s.classList.add('sp-gone');return;}
+  // Dismiss after 2.8 s (letters finish at ~1.58 s + reading time)
+  setTimeout(function(){
+    s.classList.add('sp-exit');
+    // Fallback: force-remove after transition ends (or 900 ms max)
+    var done=false;
+    function hide(){if(done)return;done=true;s.classList.add('sp-gone');}
+    s.addEventListener('transitionend',hide,{once:true});
+    setTimeout(hide,900);
+    try{sessionStorage.setItem('qs_sp2','1');}catch(e){}
+  },2800);
+})();
+</script>
+</body>
+</html>
