@@ -16,7 +16,7 @@ URL analyzer (15 explainable rules, including brand-clone/typo-squatting detecti
 mvn test              # runs all tests (needs internet the first time to download dependencies)
 mvn spring-boot:run   # starts the app
 ```
-Open http://127.0.0.1:8080. Stop with Ctrl+C. The SQLite file is created at `instance\qrshield.db`; to reset it, stop the app and delete that file.
+Open http://127.0.0.1:8081. Stop with Ctrl+C. The SQLite file is created at `instance\qrshield.db`; to reset it, stop the app and delete that file.
 Build a jar: `mvn package` then `java -jar target\qrshield-1.0.0.jar`.
 
 ## Configuration
